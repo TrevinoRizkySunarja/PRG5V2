@@ -1,11 +1,4 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $brand }} | Gaming Products Library</title>
-</head>
-<body>
+<x-library-layout :title="$brand . ' | Gaming Products Library'">
     <h1>{{ $brand }}</h1>
     <p>Kies een merk uit de gamingbibliotheek.</p>
     <ul>
@@ -16,5 +9,4 @@
         <li><a href="{{ route('brands', ['brand' => 'Razer']) }}">Razer</a></li>
     </ul>
     <p><a href="{{ route('home') }}">Terug naar home</a></p>
-</body>
-</html>
+</x-library-layout>

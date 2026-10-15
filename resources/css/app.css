@@ -1,3 +1,25 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.library-body { background: #f1f5f9; color: #0f172a; font-family: Arial, sans-serif; }
+.library-container { width: min(72rem, calc(100% - 2rem)); margin-inline: auto; }
+.library-header { background: #0f172a; color: #f8fafc; padding-block: 1.5rem; }
+.library-brand { display: inline-block; font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+.library-navigation, .library-nav-group { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.library-navigation { justify-content: space-between; gap: 1rem; }
+.library-nav-link { display: inline-block; border-radius: 0.35rem; padding: 0.5rem 0.75rem; color: #e2e8f0; }
+.library-nav-link:hover { background: #334155; }
+.library-nav-link.is-active { background: #38bdf8; color: #0f172a; font-weight: 700; }
+.library-body a:focus-visible, .library-body button:focus-visible { outline: 3px solid #0ea5e9; outline-offset: 3px; }
+.library-content { background: white; margin-top: 2rem; padding: 2rem; border-radius: 0.6rem; }
+.library-content h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; }
+.library-content h2 { font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+.library-content p { margin-block: 0.75rem; line-height: 1.6; }
+.library-content ul { list-style: disc; padding-left: 1.5rem; }
+.library-content li { margin-block: 0.4rem; }
+.library-content a { color: #075985; text-decoration: underline; text-underline-offset: 0.2rem; }
+.library-account { border-top: 1px solid #cbd5e1; margin-top: 1.5rem; }
+.library-footer { padding-block: 1.5rem; font-size: 0.875rem; color: #475569; }
+.library-skip-link { position: absolute; top: -5rem; left: 1rem; background: white; padding: 0.75rem; z-index: 10; }
+.library-skip-link:focus { top: 0.5rem; }

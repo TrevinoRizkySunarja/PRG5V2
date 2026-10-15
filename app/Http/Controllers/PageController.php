@@ -25,7 +25,7 @@ class PageController extends Controller
 
     public function brands(string $brand = 'Alle merken')
     {
-        //Dit is de filter voor mijn producten in de URL!
+        // Ontvangt de merknaam uit de URL; filtert nog geen producten.
         return view('brands', [
             'brand' => $brand,
         ]);
