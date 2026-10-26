@@ -32,7 +32,7 @@ it('renders the shared layout, cards and the active navigation', function () {
         ->assertOk()
         ->assertSee('<title>Over Gaming Products Library</title>', false)
         ->assertSee('aria-current="page"', false)
-        ->assertSee('library-card', false)
+        ->assertSee('<article', false)
         ->assertSee('Ontdek de producten van Logitech.');
 
     $this->get(route('test'))->assertOk()->assertSee('Test Page');

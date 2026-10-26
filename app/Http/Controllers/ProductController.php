@@ -2,12 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'brand' => ['nullable', 'string', Rule::in(config('library.brands'))],
+            'category' => ['nullable', 'string', Rule::in(config('library.categories'))],
+            'page' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $query = Product::query();
+
+        if (filled($filters['q'] ?? null)) {
+            $search = '%'.$filters['q'].'%';
+            $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', $search)
+                    ->orWhere('description', 'like', $search);
+            });
+        }
+
+        foreach (['brand', 'category'] as $column) {
+            if (filled($filters[$column] ?? null)) {
+                $query->where($column, $filters[$column]);
+            }
+        }
+
         $pageTitle = config('library.name');
         $brands = config('library.brands');
         $categories = config('library.categories');
@@ -16,6 +42,8 @@ class ProductController extends Controller
             'pageTitle' => $pageTitle,
             'brands' => $brands,
             'categories' => $categories,
+            'products' => $query->orderBy('title')->orderBy('id')->paginate(9)->withQueryString(),
+            'filters' => $filters,
         ]);
     }
 
@@ -30,11 +58,10 @@ class ProductController extends Controller
         abort(501, 'Producten opslaan is nog niet uitgewerkt.');
     }
 
-    public function show(string $product)
+    public function show(Product $product): View
     {
-        // De routeparameter is voorlopig alleen een ID, geen databaseproduct.
         return view('products.show', [
-            'productId' => $product,
+            'product' => $product,
         ]);
     }
 

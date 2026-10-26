@@ -1,8 +1,8 @@
 @props(['title', 'subtitle' => null, 'href' => null])
 
-<article {{ $attributes->class(['library-card']) }}>
+<article {{ $attributes->class(['min-w-0 break-words rounded-lg border border-slate-300 p-5']) }}>
     @if ($subtitle)
-        <p class="library-card-subtitle">{{ $subtitle }}</p>
+        <p class="text-sm text-slate-600">{{ $subtitle }}</p>
     @endif
     <h2>
         @if ($href)

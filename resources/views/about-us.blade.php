@@ -2,7 +2,7 @@
     <h1>Over {{ $company }}</h1>
     <p>Ontdek gamingproducten voor jouw setup. Bekijk hun beschrijving, merk, productsoort en richtprijs.</p>
     <h2>Merken in de bibliotheek</h2>
-    <div class="library-grid">
+    <div class="my-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($brands as $brand)
             <x-library-card :title="$brand" subtitle="Gamingmerk" :href="route('brands', ['brand' => $brand])">
                 <p>Ontdek de producten van {{ $brand }}.</p>
