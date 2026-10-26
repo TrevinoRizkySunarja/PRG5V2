@@ -9,13 +9,13 @@
 
     <div class="library-nav-group">
         @guest
-            <x-library-nav-link :href="route('login')">Inloggen</x-library-nav-link>
-            <x-library-nav-link :href="route('register')">Registreren</x-library-nav-link>
+            <x-library-nav-link :href="route('login')" :active="request()->routeIs('login')">Inloggen</x-library-nav-link>
+            <x-library-nav-link :href="route('register')" :active="request()->routeIs('register')">Registreren</x-library-nav-link>
         @endguest
 
         @auth
             <x-library-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-library-nav-link>
-            <x-library-nav-link :href="route('profile.edit')">{{ auth()->user()->name }}</x-library-nav-link>
+            <x-library-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">{{ auth()->user()->name }}</x-library-nav-link>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="library-nav-link">Uitloggen</button>
