@@ -2,11 +2,9 @@
     <h1>Gaming Products Library</h1>
     <p>Ontdek gamingmuizen, headsets en toetsenborden van Logitech, Corsair, HyperX en Razer.</p>
 
-    <h2>Voorbeeldproducten</h2>
-    <ul>
-        <li><a href="{{ route('products.show', ['product' => 1]) }}">Bekijk product 1</a></li>
-        <li><a href="{{ route('products.show', ['product' => 24]) }}">Bekijk product 24</a></li>
-    </ul>
+    <h2>Vind jouw volgende gamingproduct</h2>
+    <p>Bekijk producten op één plek en ontdek welk merk en welke productsoort bij jouw setup passen.</p>
+    <p><a href="{{ route('products.index') }}">Ontdek de productbibliotheek</a></p>
     @auth
         <section class="library-account">
             <h2>Jouw account</h2>
