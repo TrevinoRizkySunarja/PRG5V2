@@ -8,8 +8,8 @@ de drie Tailwind-directives.
 ## Versienummers en commits
 
 De huidige versie staat in `VERSION`. De startversie voor deze afspraak is **V.2.0.0**.
-Iedere volgende commit werkt `VERSION` bij en begint met `V.<versie>`, gevolgd door
-een korte Nederlandse beschrijving, bijvoorbeeld `V.2.0.1 - Verbeter het zoekformulier`.
+Iedere volgende commit werkt `VERSION` bij. Het volledige commitbericht bevat alleen
+`V.<versie>`, bijvoorbeeld `V.2.0.1`, zonder beschrijving, uitleg of body.
 
 Kies de verhoging op basis van de inhoud en omvang van de wijziging:
 
