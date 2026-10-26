@@ -8,9 +8,9 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $pageTitle = 'Gaming Products Library';
-        $brands = ['Logitech', 'Corsair', 'HyperX', 'Razer'];
-        $categories = ['Muizen', 'Headsets', 'Toetsenborden'];
+        $pageTitle = config('library.name');
+        $brands = config('library.brands');
+        $categories = config('library.categories');
 
         return view('products.index', [
             'pageTitle' => $pageTitle,

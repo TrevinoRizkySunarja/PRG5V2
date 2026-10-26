@@ -2,32 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\View\View;
+
 class PageController extends Controller
 {
-    public function home()
+    public function home(): View
     {
         return view('home');
     }
 
-    public function about()
+    public function about(): View
     {
-        $company = 'Gaming Products Library';
-
         return view('about-us', [
-            'company' => $company,
+            'company' => config('library.name'),
+            'brands' => config('library.brands'),
+            'categories' => config('library.categories'),
         ]);
     }
 
-    public function contact()
+    public function contact(): View
     {
         return view('contact');
     }
 
-    public function brands(string $brand = 'Alle merken')
+    public function brands(string $brand = 'Alle merken'): View
     {
         // Ontvangt de merknaam uit de URL; filtert nog geen producten.
         return view('brands', [
             'brand' => $brand,
+            'brands' => config('library.brands'),
         ]);
     }
 }
