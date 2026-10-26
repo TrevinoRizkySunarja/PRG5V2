@@ -27,7 +27,8 @@ class PageController extends Controller
 
     public function brands(string $brand = 'Alle merken'): View
     {
-        // Ontvangt de merknaam uit de URL; filtert nog geen producten.
+        abort_unless($brand === 'Alle merken' || in_array($brand, config('library.brands'), true), 404);
+
         return view('brands', [
             'brand' => $brand,
             'brands' => config('library.brands'),
