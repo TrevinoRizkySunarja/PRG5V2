@@ -5,6 +5,25 @@ De bestaande Breeze-authenticatie verzorgt registratie, login en profielbeheer.
 De vormgeving gebruikt Tailwind-utilities in Blade-componenten; `app.css` bevat alleen
 de drie Tailwind-directives.
 
+## Versienummers en commits
+
+De huidige versie staat in `VERSION`. De startversie voor deze afspraak is **V.2.0.0**.
+Iedere volgende commit werkt `VERSION` bij en begint met `V.<versie>`, gevolgd door
+een korte Nederlandse beschrijving, bijvoorbeeld `V.2.0.1 - Verbeter het zoekformulier`.
+
+Kies de verhoging op basis van de inhoud en omvang van de wijziging:
+
+- Klein: een beperkte fix of aanpassing, bijvoorbeeld `2.0.0` naar `2.0.1`.
+- Middelgroot: een nieuwe functie of duidelijke uitbreiding, bijvoorbeeld `2.0.1` naar `2.1.0`.
+- Groot: een omvangrijke uitbreiding of herwerking met meerdere toegevoegde en gewijzigde
+  bestanden, bijvoorbeeld `2.1.0` naar `3.0.0`.
+
+Bij een verhoging van het middelste getal wordt het laatste getal nul. Bij een verhoging
+van het eerste getal worden beide overige getallen nul. Beoordeel de samenhang en omvang
+van de code; alleen het aantal bestanden bepaalt niet de versie. Deze projectafspraak
+baseert de versie op wijzigingsomvang en vereist geen brekende wijziging voor een hoofdversie.
+Pas bestaande gepushte commits niet achteraf aan om ze te hernummeren.
+
 ## Lokaal starten
 
 Vereist: PHP 8.4 of hoger voor de vastgelegde ontwikkeldependencies, Composer en Node.js.
