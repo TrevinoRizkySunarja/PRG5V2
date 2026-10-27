@@ -1,6 +1,9 @@
 <x-library-layout :title="$pageTitle">
     <h1>{{ $pageTitle }}</h1>
     <p>Vind een gamingmuis, headset of toetsenbord voor jouw setup.</p>
+    @auth
+        <p><a class="inline-block rounded bg-sky-800 px-4 py-2 font-bold !text-white hover:bg-sky-900" href="{{ route('products.create') }}">Product toevoegen</a></p>
+    @endauth
     <form method="GET" action="{{ route('products.index') }}" class="my-6 flex flex-wrap items-end gap-4 rounded-lg bg-slate-100 p-4" aria-label="Producten zoeken en filteren">
         <div class="min-w-0 flex-1 basis-48">
             <label for="q" class="mb-2 block font-bold">Zoek op naam of beschrijving</label>

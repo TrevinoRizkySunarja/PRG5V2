@@ -26,7 +26,8 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as [$brand, $title, $category, $description, $price]) {
-            Product::firstOrCreate(
+            // Een soft-deleted product mag niet per ongeluk opnieuw worden toegevoegd.
+            Product::withTrashed()->firstOrCreate(
                 ['brand' => $brand, 'title' => $title],
                 compact('category', 'description', 'price'),
             );

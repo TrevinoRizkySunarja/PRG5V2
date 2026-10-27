@@ -18,6 +18,9 @@
     </header>
 
     <main id="main-content" class="mx-4 mt-8 max-w-6xl rounded-lg bg-white p-4 sm:p-8 xl:mx-auto [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-bold [&>h2]:mt-6 [&_p]:my-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6 [&_li]:my-2 [&_a]:text-sky-800 [&_a]:underline [&_a]:underline-offset-4">
+        @if (session('status'))
+            <p role="status" class="mb-6 rounded border border-green-300 bg-green-50 p-3 text-green-900">{{ session('status') }}</p>
+        @endif
         {{ $slot }}
     </main>
 

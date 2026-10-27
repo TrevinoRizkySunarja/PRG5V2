@@ -7,7 +7,7 @@ de drie Tailwind-directives.
 
 ## Versienummers en commits
 
-De huidige versie staat in `VERSION`. De startversie voor deze afspraak is **V.2.0.0**.
+De huidige versie staat in `VERSION` (**V.2.2.0**). De startversie voor deze afspraak was **V.2.0.0**.
 Iedere volgende commit werkt `VERSION` bij. Het volledige commitbericht bevat alleen
 `V.<versie>`, bijvoorbeeld `V.2.0.1`, zonder beschrijving, uitleg of body.
 
@@ -61,12 +61,14 @@ en lokale databasebestanden horen niet in Git.
 - Als bezoeker wil ik gamingproducten bekijken en een detailpagina openen.
 - Als bezoeker wil ik op tekst zoeken en op merk/productsoort filteren om passende producten te vinden.
 - Als gebruiker wil ik inloggen en mijn eigen profiel beheren via Breeze.
-- Vervolg: als eigenaar wil ik mijn producten beheren; als gebruiker wil ik reviews plaatsen.
+- Als ingelogde gebruiker wil ik eigen producten toevoegen, bewerken en verwijderen.
+- Als ingelogde gebruiker wil ik reviews met een score bij producten plaatsen en mijn eigen reviews verwijderen.
 
 Les 1-2: eigen pagina's en MVC. Les 3: routes en controllers. Les 4: gedeelde layout,
 partials en componenten. Les 5: productschema, Eloquent en databasegegevens tonen.
-Relaties, eigenaarschap, reviews, rollen en aanvullende eindopdrachtregels zijn vervolgwerk
-voor de latere lessen; deze planning is geen claim dat die onderdelen al af zijn.
+Les 6: create/store, edit/update, relaties, reviews en soft delete.
+Rollen (zoals beheerdersrechten), verdere reviewfunctionaliteit en aanvullende
+eindopdrachtregels horen bij latere lessen.
 
 ## Catalogus vullen
 
@@ -80,23 +82,44 @@ De bedragen zijn demonstratiedata, geen actuele winkelprijzen.
 
 De catalogus ondersteunt zoeken in titel en beschrijving, gecombineerde merk- en
 productsoortfilters, paginering en detailpagina's met een 404 bij een ontbrekend product.
-De zeven resource-routes bestaan; aanmaken, bewerken en verwijderen via formulieren zijn
-nog niet uitgewerkt en geven voorlopig HTTP 501. De publieke interface biedt deze acties niet aan.
+De zeven resource-routes zijn uitgewerkt. Iedereen kan producten bekijken en filteren.
+Na het inloggen kun je via **Product toevoegen** een eigen product aanmaken.
+Alleen de eigenaar kan het eigen product bewerken of soft deleten; de twaalf
+demo-producten zijn bewust niet bewerkbaar. Reviews zijn publiek leesbaar.
+Ingelogde gebruikers kunnen een review met 1 t/m 5 sterren plaatsen en uitsluitend
+hun eigen reviews verwijderen. Formulierwaarden worden server-side gevalideerd.
+
+Na het ophalen van les 6 voer je `php artisan migrate` uit om de eigenaarrelatie,
+soft delete en de tabel `reviews` toe te voegen. Bestaande producten blijven bestaan.
+Soft delete vult `deleted_at` in: het product verdwijnt uit de catalogus, maar blijft
+in de database en de gekoppelde reviews blijven bewaard.
 
 Als CSS ontbreekt na het stoppen van Vite: verwijder het verouderde `public/hot`-bestand
 en voer `npm run build` uit. Tijdens ontwikkeling maakt `npm run dev` dit bestand opnieuw.
 
-## Datamodel na les 5
+## Datamodel na les 6
 
 ```mermaid
 erDiagram
     products {
         bigint id PK
+        bigint user_id FK "nullable, eigenaar"
         varchar title "max 100"
         text description
         varchar brand "max 50, index"
         varchar category "max 50, index"
         decimal price "10,2"
+        timestamp deleted_at "nullable, soft delete"
+        timestamp created_at
+        timestamp updated_at
+    }
+    reviews {
+        bigint id PK
+        bigint product_id FK
+        bigint user_id FK
+        varchar title "max 100"
+        tinyint rating "1-5"
+        text content
         timestamp created_at
         timestamp updated_at
     }
@@ -110,9 +133,14 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+    users o|--o{ products : "heeft eigen producten"
+    users ||--o{ reviews : "schrijft"
+    products ||--o{ reviews : "heeft"
 ```
 
-Dit toont de twee domeintabellen die nu bestaan; er is nog geen relatie tussen users en
-products. Brand en category zijn in deze fase tekstvelden. De combinatie brand + title
-is uniek. Laravel-tabellen voor sessies, wachtwoordherstel, cache en queues zijn hier weggelaten.
-Normalisatie van merken/productsoorten, eigenaarschap en reviews horen bij het vervolg.
+`products.user_id` is leeg bij demo-producten en verwijst bij eigen producten naar `users.id`.
+Elke review verwijst naar exact één product en één gebruiker. Brand en category zijn nog
+tekstvelden; de combinatie brand + title blijft uniek, ook na soft delete.
+De database-migratie gebruikt `cascadeOnDelete` bij reviews voor echte verwijdering van
+de gekoppelde rij. Een soft delete verwijdert de reviews juist niet.
+Laravel-tabellen voor sessies, wachtwoordherstel, cache en queues zijn weggelaten.
