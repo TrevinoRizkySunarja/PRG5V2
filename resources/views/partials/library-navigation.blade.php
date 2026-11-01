@@ -14,7 +14,10 @@
         @endguest
 
         @auth
-            <x-library-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Dashboard</x-library-nav-link>
+            <x-library-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">Mijn producten</x-library-nav-link>
+            @if (auth()->user()->isAdmin())
+                <x-library-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.*')">Adminbeheer</x-library-nav-link>
+            @endif
             <x-library-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.*')">{{ auth()->user()->name }}</x-library-nav-link>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

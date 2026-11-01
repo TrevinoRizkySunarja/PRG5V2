@@ -10,7 +10,7 @@
     </dl>
     <p>Deze democatalogus toont voorbeeldprijzen. Je kunt hier geen bestelling plaatsen.</p>
     @auth
-        @if ($product->user_id !== null && (int) $product->user_id === auth()->id())
+        @can('update', $product)
             <div class="my-6 flex flex-wrap items-center gap-4">
                 <a class="rounded bg-sky-800 px-4 py-2 font-bold !text-white" href="{{ route('products.edit', $product) }}">Product bewerken</a>
                 <form method="POST" action="{{ route('products.destroy', $product) }}" onsubmit="return confirm('Weet je zeker dat je dit product wilt verwijderen?')">
@@ -19,7 +19,7 @@
                     <button type="submit" class="rounded bg-red-700 px-4 py-2 font-bold text-white">Product verwijderen</button>
                 </form>
             </div>
-        @endif
+        @endcan
     @endauth
 
     <section class="my-8 border-t border-slate-300 pt-6" aria-labelledby="reviews-heading">

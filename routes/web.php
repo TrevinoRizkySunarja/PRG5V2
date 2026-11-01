@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\ProductModerationController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -15,9 +17,7 @@ Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/about-us', [PageController::class, 'about'])->name('about');
 Route::get('/brands/{brand?}', [PageController::class, 'brands'])->name('brands');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware('auth')->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth')->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -36,6 +36,12 @@ Route::get('/test', function () {
 Route::get('/welcome', function () {
     return view('welcome');
 })->name('welcome');
+
+Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/products', [ProductModerationController::class, 'index'])->name('products.index');
+    Route::post('/products/{product}/toggle-status', [ProductModerationController::class, 'toggleStatus'])
+        ->name('products.toggle-status');
+});
 
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 

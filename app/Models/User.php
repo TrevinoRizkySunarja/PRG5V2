@@ -31,6 +31,16 @@ class User extends Authenticatable
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function loginDays(): HasMany
+    {
+        return $this->hasMany(LoginDay::class);
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -19,7 +20,7 @@ class ProductController extends Controller
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $query = Product::query();
+        $query = Product::query()->where('is_active', true);
 
         if (filled($filters['q'] ?? null)) {
             $search = '%'.$filters['q'].'%';
@@ -60,8 +61,13 @@ class ProductController extends Controller
         return redirect()->route('products.show', $product)->with('status', 'Product toegevoegd.');
     }
 
-    public function show(Product $product): View
+    public function show(Request $request, Product $product): View
     {
+        if (! $product->is_active) {
+            $user = $request->user();
+            abort_unless($user && ($user->isAdmin() || (int) $product->user_id === (int) $user->getKey()), 404);
+        }
+
         return view('products.show', [
             'product' => $product,
             'reviews' => $product->reviews()->with('user')->latest()->paginate(5),
@@ -70,14 +76,14 @@ class ProductController extends Controller
 
     public function edit(Request $request, Product $product): View
     {
-        $this->authorizeOwner($request, $product);
+        Gate::authorize('update', $product);
 
         return view('products.edit', compact('product'));
     }
 
     public function update(Request $request, Product $product): RedirectResponse
     {
-        $this->authorizeOwner($request, $product);
+        Gate::authorize('update', $product);
         $product->update($this->validatedData($request, $product));
 
         return redirect()->route('products.show', $product)->with('status', 'Product bijgewerkt.');
@@ -85,15 +91,10 @@ class ProductController extends Controller
 
     public function destroy(Request $request, Product $product): RedirectResponse
     {
-        $this->authorizeOwner($request, $product);
+        Gate::authorize('delete', $product);
         $product->delete();
 
         return redirect()->route('products.index')->with('status', 'Product verwijderd.');
-    }
-
-    private function authorizeOwner(Request $request, Product $product): void
-    {
-        abort_unless($product->user_id == $request->user()->getKey(), 403);
     }
 
     private function validatedData(Request $request, ?Product $product = null): array

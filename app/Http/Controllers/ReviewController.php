@@ -12,6 +12,8 @@ class ReviewController extends Controller
 {
     public function store(Request $request, Product $product): RedirectResponse
     {
+        abort_unless($product->is_active, 404);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'max:100'],
             'rating' => ['required', 'integer', 'between:1,5'],

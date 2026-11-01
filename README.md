@@ -7,7 +7,7 @@ de drie Tailwind-directives.
 
 ## Versienummers en commits
 
-De huidige versie staat in `VERSION` (**V.2.2.0**). De startversie voor deze afspraak was **V.2.0.0**.
+De huidige versie staat in `VERSION` (**V.3.0.0**). De startversie voor deze afspraak was **V.2.0.0**.
 Iedere volgende commit werkt `VERSION` bij. Het volledige commitbericht bevat alleen
 `V.<versie>`, bijvoorbeeld `V.2.0.1`, zonder beschrijving, uitleg of body.
 
@@ -144,3 +144,21 @@ tekstvelden; de combinatie brand + title blijft uniek, ook na soft delete.
 De database-migratie gebruikt `cascadeOnDelete` bij reviews voor echte verwijdering van
 de gekoppelde rij. Een soft delete verwijdert de reviews juist niet.
 Laravel-tabellen voor sessies, wachtwoordherstel, cache en queues zijn weggelaten.
+
+
+## V3.0.0: rollen, status en mondeling
+
+- Gewone accounts krijgen `role=user` via de database. Een admin kan via de serverconsole worden aangewezen: `php artisan library:make-admin email@voorbeeld.nl`.
+- `routes/web.php`: publieke routes, `auth` voor eigen producten en `auth` + `can:access-admin` voor het adminoverzicht.
+- `ProductPolicy`: alleen de uploader mag een product bewerken of verwijderen, ook bij een directe URL. HTTP 403 bij weigering.
+- `ProductModerationController`: aparte POST-actie `toggleStatus` voor actief/niet-actief; de admin ziet alle producten. Een inactief product staat niet in publieke zoekresultaten en levert bezoekers HTTP 404 op.
+- `ProductController::index`: zoeken in titel en beschrijving én filteren op merk en categorie met Eloquent.
+- `ReviewController::store`: reviewvalidatie en losse Eloquent-query voor vijf verschillende inlogdagen, geregistreerd in `login_days`.
+- `database/migrations`: schema, kolommen en relaties. `database/seeders`: twaalf vaste demoproducten. `database/factories`: willekeurige testdata.
+- `tests/Feature`: tests voor zoeken, CRUD, eigen producten, adminstatus, autorisatie en reviewvoorwaarden.
+
+### OTAP en testen
+
+Ontwikkeling is lokaal; Test is geïsoleerde testomgeving; Acceptatie is een productieachtige stagingomgeving; Productie is de live server. Configureer per omgeving een aparte `.env` met database en secrets. Commit geen secrets. In productie: `APP_ENV=production`, `APP_DEBUG=false`, HTTPS, veilige `APP_KEY` en databasebackups. Bouw assets met `npm ci` en `npm run build`, installeer Composer-dependencies zonder devpackages, voer migraties uit met `php artisan migrate --force` na een backup. Geen productiedeployment is uitgevoerd.
+
+Lokaal na pull: `php artisan migrate`, `php artisan test`, `npm run build`. Voor je 5-minuten-demo: toon gewone gebruiker tegenover admin, eigen product-CRUD en 403 bij andere eigenaar, status POST, gecombineerde zoekfilters en de vijf-inlogdagencontrole.
