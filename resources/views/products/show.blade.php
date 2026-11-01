@@ -58,6 +58,7 @@
                     </ul>
                 </div>
             @endif
+            <p>Een review plaatsen kan na inloggen op minimaal vijf verschillende dagen. Deze regel wordt op de server gecontroleerd.</p>
             <form method="POST" action="{{ route('products.reviews.store', $product) }}" class="my-4 space-y-4">
                 @csrf
                 <div>

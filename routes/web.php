@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('products', ProductController::class)->except(['index', 'show']);
-    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->name('products.reviews.store');
+    Route::post('/products/{product}/reviews', [ReviewController::class, 'store'])->middleware('throttle:5,1')->name('products.reviews.store');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 });
 

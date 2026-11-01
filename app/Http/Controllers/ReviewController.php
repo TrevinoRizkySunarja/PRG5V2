@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoginDay;
 use App\Models\Product;
 use App\Models\Review;
 use Illuminate\Http\RedirectResponse;
@@ -16,6 +17,17 @@ class ReviewController extends Controller
             'rating' => ['required', 'integer', 'between:1,5'],
             'content' => ['required', 'string', 'min:5', 'max:2000'],
         ]);
+
+        // Verplichte diepere validatie met een afzonderlijke Eloquent-query.
+        $loginDays = LoginDay::query()
+            ->where('user_id', $request->user()->getKey())
+            ->count();
+
+        if ($loginDays < 5) {
+            return back()->withErrors([
+                'review_eligibility' => 'Je kunt een review plaatsen na inloggen op vijf verschillende dagen ('.$loginDays.'/5).',
+            ])->withInput();
+        }
 
         $product->reviews()->create([
             ...$data,

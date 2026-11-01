@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\LoginDay;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,12 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        // One record per successful-login day, regardless of repeated logins.
+        LoginDay::firstOrCreate([
+            'user_id' => $request->user()->getKey(),
+            'login_date' => now()->toDateString(),
+        ]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

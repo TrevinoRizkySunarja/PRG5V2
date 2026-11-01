@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\LoginDay;
 use App\Models\Product;
 use App\Models\Review;
 use App\Models\User;
@@ -16,6 +17,10 @@ function reviewInput(array $overrides = []): array
 it('stores an authenticated review related to its product and author', function () {
     $product = Product::factory()->create();
     $user = User::factory()->create();
+
+    foreach (range(0, 4) as $day) {
+        LoginDay::create(['user_id' => $user->id, 'login_date' => now()->subDays($day)->toDateString()]);
+    }
 
     $this->actingAs($user)->post(route('products.reviews.store', $product), reviewInput())
         ->assertRedirect(route('products.show', $product));
@@ -60,4 +65,23 @@ it('retains reviews when a product is soft deleted', function () {
 
     $this->assertDatabaseCount('reviews', 1);
     $this->get(route('products.show', $review->product_id))->assertNotFound();
+});
+
+
+it('requires five distinct successful login days before writing a review', function () {
+    $product = Product::factory()->create();
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    foreach (range(0, 3) as $day) {
+        LoginDay::create(['user_id' => $user->id, 'login_date' => now()->subDays($day)->toDateString()]);
+    }
+
+    $this->post(route('products.reviews.store', $product), reviewInput())
+        ->assertSessionHasErrors('review_eligibility');
+    $this->assertDatabaseCount('reviews', 0);
+
+    LoginDay::create(['user_id' => $user->id, 'login_date' => now()->subDays(4)->toDateString()]);
+    $this->post(route('products.reviews.store', $product), reviewInput())->assertRedirect();
+    $this->assertDatabaseCount('reviews', 1);
 });
