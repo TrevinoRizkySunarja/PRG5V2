@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -11,7 +12,7 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
@@ -36,6 +37,12 @@ class ProductController extends Controller
             }
         }
 
+        $products = $query->orderBy('title')->orderBy('id')->paginate(9)->withQueryString();
+
+        if ($request->expectsJson()) {
+            return response()->json($products);
+        }
+
         $pageTitle = config('library.name');
         $brands = config('library.brands');
         $categories = config('library.categories');
@@ -44,7 +51,7 @@ class ProductController extends Controller
             'pageTitle' => $pageTitle,
             'brands' => $brands,
             'categories' => $categories,
-            'products' => $query->orderBy('title')->orderBy('id')->paginate(9)->withQueryString(),
+            'products' => $products,
             'filters' => $filters,
         ]);
     }
@@ -54,18 +61,27 @@ class ProductController extends Controller
         return view('products.create', ['product' => new Product()]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $product = $request->user()->products()->create($this->validatedData($request));
+
+        if ($request->expectsJson()) {
+            return response()->json(['data' => $product->refresh()], 201)
+                ->header('Location', route('products.show', $product));
+        }
 
         return redirect()->route('products.show', $product)->with('status', 'Product toegevoegd.');
     }
 
-    public function show(Request $request, Product $product): View
+    public function show(Request $request, Product $product): View|JsonResponse
     {
         if (! $product->is_active) {
             $user = $request->user();
             abort_unless($user && ($user->isAdmin() || (int) $product->user_id === (int) $user->getKey()), 404);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['data' => $product]);
         }
 
         return view('products.show', [
@@ -81,18 +97,26 @@ class ProductController extends Controller
         return view('products.edit', compact('product'));
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $product);
         $product->update($this->validatedData($request, $product));
 
+        if ($request->expectsJson()) {
+            return response()->json(['data' => $product->refresh()]);
+        }
+
         return redirect()->route('products.show', $product)->with('status', 'Product bijgewerkt.');
     }
 
-    public function destroy(Request $request, Product $product): RedirectResponse
+    public function destroy(Request $request, Product $product): RedirectResponse|JsonResponse
     {
         Gate::authorize('delete', $product);
         $product->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Product verwijderd.']);
+        }
 
         return redirect()->route('products.index')->with('status', 'Product verwijderd.');
     }

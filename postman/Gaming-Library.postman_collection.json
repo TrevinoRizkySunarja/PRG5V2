@@ -1,0 +1,579 @@
+{
+  "info": {
+    "name": "Gaming Library - Herd HTTP demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Start Herd en voer scripts/setup-herd.ps1 uit. Registreer een GEWOON gebruikersaccount in de browser. Vul email en password alleen lokaal in deze collectie in. Gebruik Postman Desktop en voer requests 01-15 op volgorde uit. Begin zonder bestaande Postman-sessie (verwijder zo nodig cookies voor gaming-library.test). Cookies en CSRF blijven ingeschakeld. Login/logout geven 302; productroutes geven JSON bij Accept: application/json. PATCH en PUT vereisen hier alle vijf productvelden. De demo verwijdert uitsluitend het product dat hij zelf heeft aangemaakt. Stop bij een onverwachte status; de Runner wordt dan automatisch gestopt. Exporteer of commit geen collectie met ingevulde wachtwoorden."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://gaming-library.test",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "csrf",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "demo_title",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 GET login + CSRF-token",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "text/html"
+          }
+        ],
+        "url": "{{base_url}}/login"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "const token = pm.response.text().match(/name=\"_token\"[^>]*value=\"([^\"]+)\"/);",
+              "pm.test(\"CSRF-token aanwezig\", () => pm.expect(token).not.to.equal(null));",
+              "if (!token) { pm.execution.setNextRequest(null); throw new Error(\"Geen CSRF-token. Controleer login en cookies.\"); }",
+              "pm.collectionVariables.set(\"csrf\", token[1]);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 POST inloggen (normale redirect)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 302\", () => pm.response.to.have.status(302));",
+              "if (pm.response.code !== 302) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 GET nieuw CSRF-token na login",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "text/html"
+          }
+        ],
+        "url": "{{base_url}}/products/create"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "const token = pm.response.text().match(/name=\"_token\"[^>]*value=\"([^\"]+)\"/);",
+              "pm.test(\"CSRF-token aanwezig\", () => pm.expect(token).not.to.equal(null));",
+              "if (!token) { pm.execution.setNextRequest(null); throw new Error(\"Geen CSRF-token. Controleer login en cookies.\"); }",
+              "pm.collectionVariables.set(\"csrf\", token[1]);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 GET zoeken en filteren",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products?q=gaming&brand=Logitech&category=Muizen"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.test(\"Productlijst\", () => pm.expect(pm.response.json().data).to.be.an(\"array\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 POST product toevoegen",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{demo_title}}\",\n  \"description\": \"Product aangemaakt met Postman.\",\n  \"brand\": \"Logitech\",\n  \"category\": \"Muizen\",\n  \"price\": \"49.95\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.unset(\"product_id\");",
+              "pm.collectionVariables.set(\"demo_title\", \"Postman \" + pm.variables.replaceIn(\"{{$guid}}\"));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code !== 201) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.collectionVariables.set(\"product_id\", pm.response.json().data.id);",
+              "pm.test(\"Product opgeslagen\", () => pm.expect(pm.response.json().data.title).to.eql(pm.collectionVariables.get(\"demo_title\")));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 GET eigen product",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.test(\"Juiste product\", () => pm.expect(String(pm.response.json().data.id)).to.eql(String(pm.collectionVariables.get(\"product_id\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 PATCH product wijzigen",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{demo_title}} PATCH\",\n  \"description\": \"Product aangemaakt met Postman.\",\n  \"brand\": \"Logitech\",\n  \"category\": \"Muizen\",\n  \"price\": \"49.95\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.test(\"Wijziging teruggekregen\", () => pm.expect(pm.response.json().data.title).to.eql(pm.collectionVariables.get(\"demo_title\") + \" PATCH\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 GET wijziging opgeslagen",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.test(\"Wijziging opgeslagen\", () => pm.expect(pm.response.json().data.title).to.eql(pm.collectionVariables.get(\"demo_title\") + \" PATCH\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 PUT product wijzigen",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{demo_title}} PUT\",\n  \"description\": \"Product aangemaakt met Postman.\",\n  \"brand\": \"Logitech\",\n  \"category\": \"Muizen\",\n  \"price\": \"49.95\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 POST ongeldige prijs",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{demo_title}} ongeldig\",\n  \"description\": \"Product aangemaakt met Postman.\",\n  \"brand\": \"Logitech\",\n  \"category\": \"Muizen\",\n  \"price\": -10\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+              "if (pm.response.code !== 422) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }",
+              "pm.test(\"Prijsfout\", () => pm.expect(pm.response.json().errors).to.have.property(\"price\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 GET adminpagina als gewone gebruiker",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/admin/products"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+              "if (pm.response.code !== 403) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 DELETE eigen product",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "if (pm.response.code !== 200) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 GET verwijderd product",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/products/{{product_id}}"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "if (pm.response.code !== 404) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 POST uitloggen",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-TOKEN",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/logout"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 302\", () => pm.response.to.have.status(302));",
+              "if (pm.response.code !== 302) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 GET dashboard zonder login",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dashboard"
+      },
+      "protocolProfileBehavior": {
+        "followRedirects": false
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "if (pm.response.code !== 401) { pm.execution.setNextRequest(null); throw new Error(\"Onverwachte HTTP-status: \" + pm.response.code); }"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
