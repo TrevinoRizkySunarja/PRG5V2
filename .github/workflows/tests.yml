@@ -32,3 +32,24 @@ jobs:
       - run: npm run build
       - run: php artisan view:cache
       - run: php artisan test
+      - name: Check PowerShell script syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile("$PWD/scripts/setup-herd.ps1", [ref]$tokens, [ref]$parseErrors) | Out-Null
+          if ($parseErrors.Count -gt 0) { $parseErrors | Format-List; exit 1 }
+      - name: Run Postman collection against HTTP server
+        run: |
+          touch database/database.sqlite
+          php artisan migrate --no-interaction
+          php artisan db:seed --no-interaction
+          php artisan tinker --execute="\App\Models\User::factory()->create(['email' => 'http-demo@example.test', 'password' => \Illuminate\Support\Facades\Hash::make('CI-only-demo-password-123!')]);"
+          php artisan serve --host=127.0.0.1 --port=8000 > /tmp/prg5-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/login > /dev/null; then break; fi
+            sleep 1
+          done
+          npx --yes --package=newman@6 -- newman run postman/Gaming-Library.postman_collection.json --env-var base_url=http://127.0.0.1:8000 --env-var email=http-demo@example.test --env-var 'password=CI-only-demo-password-123!' --bail
